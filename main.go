@@ -1,6 +1,8 @@
 package main
 
 import (
+	"log"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
 )
@@ -24,7 +26,13 @@ func main() {
 	app.Listen(":3000")
 }
 
-func createUser(c *fiber.Ctx) error {
+func createUser(c *fiber.Ctx) (err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			log.Printf("Panic in createUser: %v", r)
+			err = c.Status(500).JSON(fiber.Map{"error": "Internal server error"})
+		}
+	}()
 	var newUser User
 	if err := c.BodyParser(&newUser); err != nil {
 		return c.Status(400).JSON(fiber.Map{"error": "Can't parse JSON"})
@@ -40,7 +48,14 @@ func createUser(c *fiber.Ctx) error {
 	return c.Status(201).JSON(fiber.Map{"id": newUser.ID})
 }
 
-func getUser(c *fiber.Ctx) error {
+func getUser(c *fiber.Ctx) (err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			log.Printf("Panic in getUser: %v", r)
+			err = c.Status(500).JSON(fiber.Map{"error": "Internal server error"})
+		}
+	}()
+
 	id := c.Params("id")
 
 	user, exists := users[id]
@@ -51,7 +66,14 @@ func getUser(c *fiber.Ctx) error {
 	return c.Status(200).JSON(user)
 }
 
-func deleteUser(c *fiber.Ctx) error {
+func deleteUser(c *fiber.Ctx) (err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			log.Printf("Panic in deleteUser: %v", r)
+			err = c.Status(500).JSON(fiber.Map{"error": "Internal server error"})
+		}
+	}()
+
 	id := c.Params("id")
 
 	if _, exists := users[id]; !exists {
@@ -62,7 +84,13 @@ func deleteUser(c *fiber.Ctx) error {
 	return c.SendStatus(200)
 }
 
-func updateUser(c *fiber.Ctx) error {
+func updateUser(c *fiber.Ctx) (err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			log.Printf("Panic in updateUser: %v", r)
+			err = c.Status(500).JSON(fiber.Map{"error": "Internal server error"})
+		}
+	}()
 	var updatedUser User
 	if err := c.BodyParser(&updatedUser); err != nil {
 		return c.Status(400).JSON(fiber.Map{"error": "Cannot parse JSON"})
